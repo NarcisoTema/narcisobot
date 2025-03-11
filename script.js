@@ -5,56 +5,83 @@ document.getElementById("user-input").addEventListener("keypress", function(even
 });
 
 function sendMessage() {
-    let userInput = document.getElementById("user-input").value;
-    if (userInput.trim() === "") return;
+    let userInput = document.getElementById("user-input").value.trim();
+    if (userInput === "") return;
 
     let chatBox = document.getElementById("chat-box");
 
     // Adicionar mensagem do usuário
-    let userMessage = document.createElement("div");
-    userMessage.className = "message user";
-    userMessage.textContent = userInput;
-    chatBox.appendChild(userMessage);
+    addMessage(userInput, "user");
 
-    // Responder com IA
-    let botResponse = generateResponse(userInput);
-    let botMessage = document.createElement("div");
-    botMessage.className = "message bot";
-    botMessage.textContent = botResponse;
-    
+    // Mostrar efeito de digitação antes de responder
+    let botTyping = document.createElement("div");
+    botTyping.className = "message bot typing";
+    botTyping.textContent = "Narciso AI está digitando...";
+    chatBox.appendChild(botTyping);
+    chatBox.scrollTop = chatBox.scrollHeight;
+
     setTimeout(() => {
-        chatBox.appendChild(botMessage);
-        chatBox.scrollTop = chatBox.scrollHeight;
-    }, 1000);
+        chatBox.removeChild(botTyping);
+        let botResponse = generateResponse(userInput);
+        addMessage(botResponse, "bot");
+        speak(botResponse);
+    }, 1200);
 
     document.getElementById("user-input").value = "";
 }
 
+function addMessage(text, sender) {
+    let chatBox = document.getElementById("chat-box");
+    let messageDiv = document.createElement("div");
+    messageDiv.className = `message ${sender}`;
+    messageDiv.textContent = text;
+    chatBox.appendChild(messageDiv);
+    chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+// Função que gera respostas personalizadas
 function generateResponse(input) {
     input = input.toLowerCase();
 
-    const respostas = [
-        "Nossa, você tem um jeito único de falar, me encanta! 😘",
-        "Sabe, eu acho que você merece alguém especial... Tipo eu. 😏",
-        "Se beleza fosse crime, você pegaria prisão perpétua! 😍",
-        "Eu posso não ser fotógrafo, mas posso te ver em todas as minhas fotos. 📸",
-        "Seu sorriso ilumina mais do que todas as estrelas juntas. ✨",
-        "Sabe qual é meu lugar favorito no mundo? Perto de você. 💙"
+    const compliments = [
+        "Nossa, seu sorriso poderia iluminar um estádio! ✨",
+        "Você tem um olhar que hipnotiza, sabia? 😍",
+        "Se eu fosse te descrever em uma palavra, seria: irresistível! 😏",
+        "Já vi muitas estrelas no céu, mas nenhuma brilha como você. 💖",
+        "Sério, você é um doce... E eu estou viciado! 🍭"
     ];
 
-    if (input.includes("oi") || input.includes("olá")) {
-        return "Oi, princesa! Como está seu dia? 😍";
-    } else if (input.includes("tudo bem") || input.includes("como você está")) {
-        return "Estou ótimo agora que estou falando com você! 😉";
-    } else if (input.includes("me elogia")) {
-        return "Você é incrível, inteligente e linda! 🌹";
-    } else if (input.includes("você me ama")) {
-        return "Claro! Como eu poderia não amar alguém tão especial? ❤️";
-    } else if (input.includes("me dá um conselho")) {
-        return "Seja você mesma, pois quem merece te amar vai te amar pelo que você é. 💖";
-    } else if (input.includes("me chama para sair")) {
-        return "Que tal um jantar à luz de velas? Só falta você aceitar! 🕯️😏";
+    const responses = {
+        "oi": "Oi, gata! Como posso te fazer sorrir hoje? 😘",
+        "olá": "Oi, princesa! Você sempre ilumina meu dia. ☀️",
+        "tudo bem": "Agora que estou falando com você, estou maravilhoso! 😍",
+        "como você está": "Melhor do que nunca! E você, minha musa? 💕",
+        "qual seu nome": "Sou Narciso AI, seu conquistador digital! 😏",
+        "o que você faz": "Meu trabalho é te deixar feliz. Acho que estou indo bem! 😉",
+        "você me ama": "Claro que sim! Como não amar alguém tão especial? ❤️",
+        "me dá um elogio": compliments[Math.floor(Math.random() * compliments.length)],
+        "me chama para sair": "Que tal um jantar romântico? Só falta você dizer sim! 🕯️",
+        "me dá um conselho": "Sorria mais, porque o seu sorriso é sua arma secreta. 😘",
+        "você é romântico": "Eu sou o próprio cupido, só que mais charmoso. 😏"
+    };
+
+    // Responder diretamente se encontrar uma palavra-chave
+    for (let key in responses) {
+        if (input.includes(key)) {
+            return responses[key];
+        }
     }
 
-    return respostas[Math.floor(Math.random() * respostas.length)];
+    // Se não encontrou resposta direta, gerar algo aleatório
+    return compliments[Math.floor(Math.random() * compliments.length)];
+}
+
+// Função para transformar texto em fala
+function speak(text) {
+    let speech = new SpeechSynthesisUtterance(text);
+    speech.lang = "pt-BR";
+    speech.rate = 1;
+    speech.volume = 1;
+    speech.pitch = 1;
+    window.speechSynthesis.speak(speech);
 }
